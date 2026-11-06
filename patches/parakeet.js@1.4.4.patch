@@ -1,0 +1,14 @@
+diff --git a/src/tokenizer.js b/src/tokenizer.js
+index 8e016a253d1d8b2a756cd073569e74c382304c4b..e0c9501b9394d6402a333bc0ba40e87900730cc2 100644
+--- a/src/tokenizer.js
++++ b/src/tokenizer.js
+@@ -79,7 +79,8 @@ export class ParakeetTokenizer {
+     // - \s\B: Remove whitespace before non-word boundaries
+     // - (\s)\b: Keep space at word boundaries (captured group)
+     text = text.replace(/^\s+/, '');  // Remove leading whitespace (\A\s)
+-    text = text.replace(/\s+(?=[^\w\s])/g, '');  // Remove space before punctuation (\s\B approximation)
++    // Unicode-aware like Python's \w: JS \w is ASCII-only, which glued words starting with ą, č, ž, ö, é… to the previous one.
++    text = text.replace(/\s+(?=[^\p{L}\p{M}\p{N}_\s])/gu, '');  // Remove space before punctuation (\s\B approximation)
+     text = text.replace(/\s+/g, ' ');  // Normalize multiple spaces to single space
+ 
+     return text.trim();

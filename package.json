@@ -1,0 +1,20 @@
+{
+  "name": "stt-bench",
+  "version": "1.0.0",
+  "description": "In-browser comparison of Chrome built-in and open speech-to-text models (Gemini Nano, Web Speech, Parakeet)",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --hot server.js",
+    "build": "bun build ./index.html --outdir dist --minify"
+  },
+  "dependencies": {
+    "parakeet.js": "1.4.4",
+    "react": "19",
+    "react-dom": "19"
+  },
+  "patchedDependencies": {
+    "parakeet.js@1.4.4": "patches/parakeet.js@1.4.4.patch"
+  }
+}
