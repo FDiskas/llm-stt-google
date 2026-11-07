@@ -67,7 +67,7 @@ Pagal viešus testus (WER, mažiau yra geriau) lietuvių kalbai tiksliausi papil
 
 Kitą Whisper modelį į transformers.js formatą (fp16 ir q4 encoderis, q4 decoderis) eksportuosi taip:
 
-1. `pip install torch transformers optimum-onnx onnx onnxruntime` (veikia ir Windows, reikia ~16 GB RAM).
+1. `pip install torch transformers accelerate optimum-onnx onnx onnx-ir onnxruntime` (veikia ir Windows, reikia ~16 GB RAM).
 2. `python scripts/export_whisper_onnx.py --model akisviete/azuolas-whisper-lt --out azuolas-whisper-lt-onnx`
 3. `hf upload <user>/azuolas-whisper-lt-onnx azuolas-whisper-lt-onnx .`
 4. `src/engines/catalog.js` pridėk `hubModel(getCtx, WH, { id, name, repoId, sizes, description, onlyLang })`.

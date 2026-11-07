@@ -8,7 +8,7 @@ Output (same file names as onnx-community/whisper-large-v3-ONNX):
 
 Runs once, outside the web app, with ~16 GB RAM (large-v3 is exported in fp32 first):
 
-  pip install torch transformers optimum-onnx onnx onnxruntime
+  pip install torch transformers accelerate optimum-onnx onnx onnx-ir onnxruntime
   python scripts/export_whisper_onnx.py --model akisviete/azuolas-whisper-lt --out azuolas-whisper-lt-onnx
 
 Then upload the folder to a Hugging Face model repo:
