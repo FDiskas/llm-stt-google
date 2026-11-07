@@ -25,6 +25,21 @@ export function chromeMajorVersion() {
   return match ? Number(match[1]) : null;
 }
 
+let gpuPromise = null;
+/** WebGPU capability of this device: 'f16' (shader-f16), 'basic' or null (no WebGPU). */
+export function webGpuSupport() {
+  gpuPromise ??= (async () => {
+    try {
+      const adapter = await navigator.gpu?.requestAdapter({ powerPreference: 'high-performance' });
+      if (!adapter) return null;
+      return adapter.features.has('shader-f16') ? 'f16' : 'basic';
+    } catch {
+      return null;
+    }
+  })();
+  return gpuPromise;
+}
+
 /** Rejects with `message` if `promise` doesn't settle within `ms`. */
 export function withTimeout(promise, ms, message) {
   let timer;

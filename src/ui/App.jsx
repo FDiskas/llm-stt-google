@@ -19,7 +19,10 @@ import { StepRecommend } from './steps/StepRecommend.jsx';
 const DEFAULT_PREFS = {
   lang: 'lt',
   phrase: {},
-  include: { nano: true, 'ws-local': true, 'parakeet-v3': true, 'parakeet-v3-lt': true, 'ws-cloud': false },
+  include: {
+    nano: true, 'ws-local': true, 'parakeet-v3': true, 'parakeet-v3-lt': true,
+    'whisper-paprika-lt': true, 'whisper-azuolas-lt': true, 'ws-cloud': false,
+  },
   prompt: '',
   chunkSec: 20,
   quality: 'dictation',

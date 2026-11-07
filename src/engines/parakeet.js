@@ -4,8 +4,10 @@
 
 import { fromHub } from 'parakeet.js';
 import { TARGET_RATE } from '../audio.js';
+import { webGpuSupport } from '../util.js';
 
 export const supported = typeof indexedDB !== 'undefined' && typeof WebAssembly !== 'undefined';
+export const storage = 'IndexedDB';
 
 // parakeet.js cache layout (src/hub.js): database, store and per-file key.
 const DB_NAME = 'parakeet-cache-db';
@@ -22,19 +24,14 @@ const QUANT_FILE = { fp16: '.fp16.onnx', int8: '.int8.onnx', fp32: '.onnx' };
  */
 const RUNTIMES = {
   gpu: { backend: 'webgpu-hybrid', encoderQuant: 'fp16', decoderQuant: 'int8', label: 'WebGPU · fp16', size: '~1,3 GB' },
-  cpu: { backend: 'wasm', encoderQuant: 'int8', decoderQuant: 'int8', label: 'CPU (WASM) · int8', size: '~0,7 GB' },
+  cpu: {
+    backend: 'wasm', encoderQuant: 'int8', decoderQuant: 'int8', label: 'CPU (WASM) · int8', size: '~0,7 GB',
+    note: 'WebGPU su fp16 nepasiekiamas, todėl veiks per procesorių (lėčiau).',
+  },
 };
 
-let runtimePromise = null;
-export function pickRuntime() {
-  runtimePromise ??= (async () => {
-    try {
-      const adapter = await navigator.gpu?.requestAdapter({ powerPreference: 'high-performance' });
-      if (adapter?.features.has('shader-f16')) return RUNTIMES.gpu;
-    } catch { /* no usable WebGPU */ }
-    return RUNTIMES.cpu;
-  })();
-  return runtimePromise;
+export async function pickRuntime() {
+  return (await webGpuSupport()) === 'f16' ? RUNTIMES.gpu : RUNTIMES.cpu;
 }
 
 export const filesFor = (runtime) => [

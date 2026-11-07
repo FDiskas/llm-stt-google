@@ -36,7 +36,7 @@ function Recommendation({ language, engines, enginesState, go }) {
     insights.push(['warn', `Gemini Nano ${language.gen} kalbos oficialiai nepalaiko, todėl jo rezultatai gali būti nestabilūs.`]);
   }
   if (!bestDevice || bestDevice.avgWer > OK_WER) {
-    insights.push(['bad', `Nė vienas įrenginyje veikiantis modelis nepasiekė gero tikslumo. Visiškai privačiam ${language.gen} kalbos atpažinimui verta išbandyti kitus atvirus modelius, pvz., kalbai pritaikytą Parakeet, Whisper (large-v3-turbo) arba Meta MMS, kurie veikia naršyklėje per WebGPU.`]);
+    insights.push(['bad', `Nė vienas įrenginyje veikiantis modelis nepasiekė gero tikslumo. Visiškai privačiam ${language.gen} kalbos atpažinimui verta išbandyti kitus atvirus modelius, pvz., ${language.gen} kalbai papildomai apmokytus Whisper ar Parakeet, kurie veikia naršyklėje per WebGPU.`]);
   } else if (bestDevice.avgWer <= GOOD_WER) {
     insights.push(['ok', `${bestDevice.engine} veikia gerai ir be interneto: vidutiniškai ${percent(bestDevice.avgWer)} žodžių klaidų.`]);
   }
@@ -135,7 +135,7 @@ function SpeechCleanup({ engine }) {
   );
 }
 
-function ParakeetCleanup({ engine }) {
+function HubModelCleanup({ engine }) {
   const state = useController(engine.ctrl);
   const toast = useToast();
   const stored = state.status === 'ready' || state.status === 'loaded';
@@ -157,7 +157,7 @@ function ParakeetCleanup({ engine }) {
           <Button size="sm" variant="danger" onClick={remove}><Icon.Trash size={14} /> Ištrinti</Button>
         )}
       </header>
-      <p>Šį modelį atsisiuntė pats tinklalapis, todėl jis saugomas šios svetainės IndexedDB talpykloje ir jį galima ištrinti mygtuku.</p>
+      <p>Šį modelį atsisiuntė pats tinklalapis, todėl jis saugomas šios svetainės {engine.storage} talpykloje ir jį galima ištrinti mygtuku.</p>
       <p className="muted small">Failai taip pat dingsta išvalius šios svetainės duomenis naršyklės nustatymuose.</p>
     </article>
   );
@@ -166,7 +166,7 @@ function ParakeetCleanup({ engine }) {
 export function StepRecommend({ step, total, language, engines, enginesState, go }) {
   const nano = engines.find((e) => e.id === 'nano');
   const local = engines.find((e) => e.id === 'ws-local');
-  const parakeets = engines.filter((e) => e.repoId);
+  const hubModels = engines.filter((e) => e.repoId);
   return (
     <>
       <StepHeader step={step} total={total} title="Rekomendacijos"
@@ -179,7 +179,7 @@ export function StepRecommend({ step, total, language, engines, enginesState, go
       <div className="cleanup-grid">
         {nano && <NanoCleanup engine={nano} />}
         {local && <SpeechCleanup engine={local} />}
-        {parakeets.map((e) => <ParakeetCleanup key={e.id} engine={e} />)}
+        {hubModels.map((e) => <HubModelCleanup key={e.id} engine={e} />)}
       </div>
 
       <div className="restart">
