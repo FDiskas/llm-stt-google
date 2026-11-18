@@ -140,12 +140,13 @@ export function App() {
   return (
     <ToastProvider>
       <div className="app">
-        <header className="topbar">
+        <header className="topbar topbar-split">
           <div className="brand">
             <span className="brand-mark"><Icon.Mic size={16} /></span>
             <span className="brand-name">Kalbos atpažinimo testas</span>
             <span className="brand-sub">Chrome modeliai</span>
           </div>
+          <a className="topnav" href="./tts.html">Kalbos sintezė <Icon.ArrowRight size={14} /></a>
         </header>
 
         <Stepper current={step} summaries={summaries} done={done} onGo={go} />

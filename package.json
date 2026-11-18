@@ -7,10 +7,11 @@
   "type": "module",
   "scripts": {
     "dev": "bun --hot server.js",
-    "build": "bun build ./index.html --outdir dist --minify --splitting"
+    "build": "bun build ./index.html ./tts.html --outdir dist --minify --splitting && bun build ./src/tts/worker.js --outdir dist --minify --entry-naming tts-worker.[ext]"
   },
   "dependencies": {
     "@huggingface/transformers": "4.3.2",
+    "onnxruntime-web": "1.31.0-dev.20260914-8d85527a0",
     "parakeet.js": "1.4.4",
     "react": "19",
     "react-dom": "19"

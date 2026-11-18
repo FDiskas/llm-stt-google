@@ -1,0 +1,1 @@
+- [espeak-wasm-phonemizer](espeak-wasm-phonemizer.md) — eSpeak NG WASM choice for Lithuanian IPA, rejected packages, -b 1 and blob-URL traps, worker build. tags: tts, espeak, wasm, bun, worker

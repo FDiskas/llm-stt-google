@@ -2,13 +2,15 @@
 
 Vedlys, kuriuo naršyklėje palyginsi Chrome integruotus ir atvirus kalbos atpažinimo (STT) modelius pasirinkta kalba. Viskas vyksta naršyklėje, serverio pusės logikos nėra.
 
+Antras puslapis, `tts.html`, atlieka atvirkštinį darbą: įgarsina lietuvišką tekstą balsu „Reginutė“ ir leidžia pritaikyti garso efektus (žr. [Kalbos sintezė](#kalbos-sintezė-ttshtml)).
+
 ## Paleidimas
 
 Reikia [Bun](https://bun.sh) ir stalinio Google Chrome 139+.
 
 ```sh
 bun install
-bun run dev        # http://localhost:8080 (prievadą keisk su PORT=...)
+bun run dev        # http://localhost:8080 ir http://localhost:8080/tts.html (prievadą keisk su PORT=...)
 bun run build      # statinė versija į dist/
 ```
 
@@ -72,9 +74,25 @@ Kitą Whisper modelį į transformers.js formatą (fp16 ir q4 encoderis, q4 deco
 3. `hf upload <user>/azuolas-whisper-lt-onnx azuolas-whisper-lt-onnx .`
 4. `src/engines/catalog.js` pridėk `hubModel(getCtx, WH, { id, name, repoId, sizes, description, onlyLang })`.
 
+## Kalbos sintezė (`tts.html`)
+
+Lietuviško teksto įgarsinimas naršyklėje, be serverio. Balsas: [RobertasTa/lt_LT-reginute1-medium](https://huggingface.co/RobertasTa/lt_LT-reginute1-medium) (Piper/VITS, LIEPA garsynas, CC-BY-4.0). Pirmą kartą atsisiunčiama ~85 MB, failai saugomi svetainės Cache Storage (`tts-cache`).
+
+Kaip tekstas virsta garsu (viskas vyksta Web Worker'yje, todėl puslapis neužstringa):
+
+1. **Skaičių ir santrumpų plėtimas** (`src/tts/lt/expand.js`): „2026 m. lapkričio 18 d. 15:30“, „9,99 Eur“, „45 proc.“, „LRT“ išrašomi žodžiais tinkamu linksniu.
+2. **Fonemos** (`src/tts/lt/phonemize.js`): [eSpeak NG](https://github.com/espeak-ng/espeak-ng) WASM (npm `espeak-ng`, kraunamas iš jsDelivr) duoda IPA, o kirčių žodynas (`lt_kirciai.tsv`, 189 tūkst. formų) perkelia kirtį ir parenka priegaidę (ˈ ˌ ˋ). Vien eSpeak kirčiuoja teisingai apie pusę žodžių.
+3. **Sintezė** (`src/tts/lt/synth.js`, `src/tts/piper.js`): tekstas skaidomas ties . , ! ? : ; – -, kiekvienas fragmentas sintezuojamas su onnxruntime-web (WASM), jo tempas išlyginamas, tyla apkarpoma ir įterpiamos išmatuotos pauzės. Pauzę ties kableliu (numatyta 0,25 s) galima keisti; 0 palieka kablelį modeliui, kaip originaliame recepte, bet tada pauzė beveik negirdima.
+4. **Efektai** (`src/tts/effects.js`): Web Audio grafas (filtrai, iškraipymas, žiedinis moduliatorius, aidas, reverb, 8D sukimas). Tas pats grafas naudojamas grojant ir eksportuojant WAV (`OfflineAudioContext`). Aukščio efektai su „išlaikyti tempą“ sintezuoja lėčiau, o paskui pagreitina grojimą, todėl keičiasi tik balso aukštis.
+
+Grojimas prasideda nuo pirmo fragmento, dar nesugeneravus viso teksto. Sugeneruotą WAV gali įkelti į STT vedlio 4 žingsnį ir patikrinti, kaip modeliai atpažįsta sintetinę kalbą.
+
+`src/tts/lt/*` yra JS perkėlimas iš balso autoriaus Python kodo (`phonemize_lithuanian.py`, `skaiciu_pletiklis.py`, `synth_reginute.py`, GPL-3.0). Taisyklių paaiškinimai ir matavimai yra originaluose. Worker'is buildinamas atskirai (`tts-worker.js`), nes Bun HTML bundleris nesiekia `new Worker(...)`.
+
 ## Struktūra
 
-- `server.js`: Bun kūrimo serveris (bundlina `index.html`, JSX, CSS).
+- `server.js`: Bun kūrimo serveris (bundlina `index.html` ir `tts.html`, JSX, CSS; `tts-worker.js` kompiliuoja kiekvienos užklausos metu).
+- `src/tts/`: kalbos sintezės puslapis (`TtsApp.jsx`), worker'is, eSpeak ir Piper adapteriai, efektai, WAV; `src/tts/lt/`: lietuvių kalbos taisyklės (GPL-3.0).
 - `src/ui/`: React komponentai (`App.jsx`, `Stepper.jsx`, `steps/*`).
 - `src/engines/`: varikliai (`catalog.js`), Web Speech, Prompt API, Parakeet ir Whisper adapteriai.
 - `scripts/export_parakeet_onnx.py`, `scripts/export_whisper_onnx.py`: vienkartiniai eksportai į ONNX (neįeina į programą).
@@ -85,3 +103,5 @@ Kitą Whisper modelį į transformers.js formatą (fp16 ir q4 encoderis, q4 deco
 ## Licencija
 
 [MIT](LICENSE). Modeliams galioja jų pačių licencijos (pvz., Parakeet TDT ir Noctra Labs modelis: CC-BY-4.0).
+
+Išimtis: `src/tts/lt/` failai yra GPL-3.0 (perkelti iš GPL-3.0 kodo), o eSpeak NG taip pat GPL-3.0, todėl subuildintas `tts.html` puslapis kaip visuma platinamas pagal GPL-3.0. Balsas „Reginutė“ ir kirčių žodynas: CC-BY-4.0, autorių nurodymai pateikti puslapio apačioje.

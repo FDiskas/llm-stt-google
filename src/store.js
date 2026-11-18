@@ -5,6 +5,7 @@ const KEYS = {
   history: 'sttBench.v2.history',
   samples: 'sttBench.v2.samples',
   prefs: 'sttBench.v2.prefs',
+  ttsPrefs: 'sttBench.v2.ttsPrefs',
 };
 const LEGACY = { history: 'ltSttBench.v1', samples: 'ltSttBench.samples.v1' };
 const MAX_RUNS = 500;
@@ -83,3 +84,13 @@ export function loadPrefs(defaults) {
 }
 
 export const savePrefs = (prefs) => write(KEYS.prefs, prefs);
+
+// ---------- text-to-speech page ----------
+
+export function loadTtsPrefs(defaults) {
+  const saved = read(KEYS.ttsPrefs);
+  if (!saved || typeof saved !== 'object') return structuredClone(defaults);
+  return { ...defaults, ...saved, custom: { ...defaults.custom, ...saved.custom } };
+}
+
+export const saveTtsPrefs = (prefs) => write(KEYS.ttsPrefs, prefs);
